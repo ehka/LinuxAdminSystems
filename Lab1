@@ -1,6 +1,6 @@
 #!/bin/bash
 
-HOME=$(df / |awk '{print $5' | sed -n '2p' | tr --delete %)
+HOME=$(df / |awk '{print $5}' | sed -n '2p' | tr --delete %)
 BOOT=$(df /boot |awk 'awk '{print $5}' | sed -n '2p' | tr --delete %)
 
 if (($HOME > 80)); then
