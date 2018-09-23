@@ -1,0 +1,22 @@
+###LAB NOTES
+
+###List of commands ran to add the storage and coping existing files
+
+pvcreate /dev/sdb
+vgcreate vg_new /dev/sdb
+vgscan
+lvcreate -n lv_tmp --size 1g vg_new
+lvcreate -n lv_home --size 4g vg_new
+mkfs.xfs /dev/vg_new/lv_home
+mkfs.xfs /dev/vg_new/lv_tmp
+mkdir /home_mnt
+mkdir /tmp_mnt
+mount /dev/vg_new/lv_home /home
+mount /dev/vg_new/lv_tmp /tmp
+cp -r /home /home_mnt
+cp -r /tmp /tmp_mnt 
+
+
+Question: At this point, have you actually freed up the disk blocks in the original filesystem?  If not, how can you free this no-longer-used storage in the root filesystem?
+
+No, If we want to free up this no-longer-used storage from the original filesystem, we can remove those files from the storage, unmount the filesystem, then shrink the size of the filesystem with "resize2fs" command and finally re-add the storage with commands mentioned above.
