@@ -1,0 +1,69 @@
+### Ehsan Karimi
+### Lab4 Notes
+
+1.
+2. Added "mpalmer ALL=/bin/systemctl restart vsftpd" to visudo in machine c
+Created a new group ftp_admin:
+groupadd ftp_admin
+Added users:
+gpasswd -M mpalmer,ekarimi,mscott,jhalpert,dschrute ftp_admin 
+Changed group owner of /var/ftp:
+chgrp ftp_admin /var/ftp
+setguid for /var/ftp:
+chmod 2770 /var/ftp
+
+
+3. Created a new group http_admins:
+groupadd http_admins
+Added users:
+gpasswd -M apache,ekarimi,pbeesly,kkapoor,abernard,mscott,jhalpert,dschrute http_admins
+
+Changed group owner of /var/www/dundermifflin:
+chgrp http_admins /var/www/dundermifflin
+
+setguid for /var/www/dundermifflin:
+
+
+
+Added "%http_admins ALL=/sbin/service httpd restart" to visudo in machine B
+
+
+4. added the following line to /etc/profile (Source: https://stackoverflow.com/questions/12445527/set-different-umask-for-files-and-folders)
+
+alias mkdir='mkdir -m 2770'
+
+5. should give access only to people inside the company?
+uncomment PermitRootLogin yes in /etc/ssh/sshd_config
+Added following to /etc/pam.d/login
+account    required     pam_access.so
+
+
+6. ran the following commands to grant admin preveliges to Dwight Schrute and myself:
+usermod -a -G wheel dschrute
+usermod -a -G wheel ekarimi
+
+uncommented wheel entry in visudo
+
+7. Added these two lines visudo:
+
+mscott ALL=/sbin/shutdown -H 
+mscott ALL=/sbin/shutdown -c
+
+
+8. 
+Added following line to /etc/pam.d/system-auth
+password    requisite     pam_pwquality.so minlen=10 dcredit=-2 ucredit=-2 ocredit=-1
+
+ran the following bash script to force password change on next login:
+
+#!/bin/bash
+ 
+getent passwd | while IFS=: read -r name password uid gid gecos home shell; 
+do    
+    passwd --expire $name
+done
+
+Source: https://unix.stackexchange.com/questions/199220/how-to-loop-over-users
+
+
+
