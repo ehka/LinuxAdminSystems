@@ -1,0 +1,86 @@
+Allow all the traffic when Machine wants to talk to itself (lo interface):
+iptables -A INPUT -i lo -j ACCEPT (At top)
+iptables -A OUTPUT -o lo -j ACCEPT
+
+Insert a rule that says to allow all existing established connections
+iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+
+### ICMP
+iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+iptables -A INPUT -p icmp --icmp-type echo-reply -j ACCEPT
+iptables -A INPUT -p icmp --icmp-type time-exceeded -j ACCEPT
+iptables -A INPUT -p icmp --icmp-type destination-unreachable -j ACCEPT
+
+
+QUESTION: Should I use established connection for SSH?
+
+On all machines except E:
+
+iptables -A INPUT -p tcp -s 100.64.0.0/16,100.64.25.0/24,100.64.254.0/24,10.21.32.0/24,198.18.0.0/16 -m state --state NEW --dport 22 -j ACCEPT
+
+###MachineA Default policies:
+
+iptables -P INPUT DROP
+iptables -P OUTPUT ACCEPT
+iptables -P FORWARD ACCEPT
+
+
+###FACEBOOK
+
+ip: 157.240.2.35
+iptables -A FORWARD -s 157.240.2.35 -j DROP
+iptables -A FORWARD -d 157.240.2.35 -j DROP
+
+###Cheezburger
+
+icanhas.cheezburger.com: 54.193.38.238
+cheezburger.com: 216.176.177.74
+iptables -A FORWARD -s 54.193.38.238,216.176.177.74 -j DROP
+iptables -A FORWARD -d 54.193.38.238,216.176.177.74 -j DROP
+
+###MachineB and MachineF
+
+iptables -A INPUT -p tcp --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -A INPUT -p tcp --dport 443 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+
+to Test: wget http://100.64.25.2:80/index.html
+
+
+###MachineC
+
+iptables -A INPUT -s 100.64.0.0/16 -j ACCEPT
+iptables -A INPUT -p tcp -s 100.64.0.0/16,100.64.0.27,172.20.74.4 --dport 21 -j ACCEPT
+iptables -A OUTPUT -p tcp --dport 53 -d 100.64.25.4 -j ACCEPT
+iptables -A OUTPUT -p udp --dport 53 -d 100.64.25.4 -j ACCEPT
+iptables -A OUTPUT -p tcp --match multiport --dports 21,80,443,22 -m conntrack --ctstate ESTABLISHED -j ACCEPT
+iptables -A OUTPUT -p tcp --sport 22 -m conntrack --ctstate ESTABLISHED -j ACCEPT
+
+Used modprobe ip_conntrack_ftp to allow passive mode for ftp.
+
+###MachineD
+
+iptables -A INPUT -p udp -m udp --dport 53 -j ACCEPT
+iptables -A OUTPUT -p udp -m udp --sport 53 -j ACCEPT
+
+###MachineE
+
+iptables -A INPUT -p tcp -s 10.21.32.0/24 --dport 445 -m state --state NEW -j ACCEPT
+iptables -A INPUT -p tcp -s 10.21.32.0/24 --dport 135 -m state --state NEW -j ACCEPT
+iptables -A INPUT -p udp -s 10.21.32.0/24 --dport 137 -m state --state NEW -j ACCEPT
+iptables -A INPUT -p udp -s 10.21.32.0/24 --dport 138 -m state --state NEW -j ACCEPT
+iptables -A INPUT -p udp -s 10.21.32.0/24 --dport 139 -m state --state NEW -j ACCEPT
+
+iptables -A INPUT -p tcp -s 10.21.32.0/24 --dport 22 -m state --state NEW -j ACCEPT
+iptables -A INPUT -p tcp -s 100.64.0.25 --dport 22 -m state --state NEW -j ACCEPT
+
+
+
+
+
+
+
+
+
+
+

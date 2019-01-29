@@ -1,0 +1,196 @@
+
+###Ehsan Karimi		Lab 5 notes
+
+/etc/Resolve.conf in all servers except machinea:
+
+search dundermifflin.com
+nameserver 100.64.25.4
+
+
+
+To setup DHCP and networking:::::::
+
+
+machinea in /etc/sysconfig/network-scripts/ifcfg-ens192:
+
+DEVICE=ens192
+BOOTPROTO=none
+ONBOOT=yes
+TYPE=Ethernet
+GATEWAY=100.64.0.254
+NETMASK=255.255.255.0
+IPADDR=100.64.0.25
+NM_CONTROLLED=no
+
+rest of the machines /etc/sysconfig/network-scripts/ifcfg-ens192:
+
+DEVICE=ens192
+BOOTPROTO=dhcp
+ONBOOT=yes
+TYPE=Ethernet
+NETWORKING=yes
+
+
+machinea /etc/dhcp/dhcpd.conf:
+
+
+subnet 100.64.25.0 netmask 255.255.255.0
+{
+        option routers 100.64.25.1;
+        option domain-name-servers 100.64.25.1;
+}
+subnet 10.21.32.0 netmask 255.255.255.0
+{
+        option domain-name-servers 10.21.32.1;
+        option routers 10.21.32.1;
+}
+
+host machineb-client {
+        option host-name "carriage.dundermifflin.com";
+        hardware ethernet 00:50:56:b4:24:f7;
+        fixed-address 100.64.25.2;
+}
+
+host machinec-client {
+        option host-name "platen.dundermifflin.com";
+        hardware ethernet 00:50:56:b4:d4:93;
+        fixed-address 100.64.25.3;
+}
+
+host machined-client {
+        option host-name "chase.dundermifflin.com";
+        hardware ethernet 00:50:56:b4:f2:42;
+        fixed-address 100.64.25.4;
+}
+
+host machinee-client {
+        option host-name "roller.dundermifflin.com";
+        hardware ethernet 00:50:56:b4:ff:62;
+        fixed-address 10.21.32.2;
+}
+
+host machinef-client {
+        option host-name "saddle.dundermifflin.com";
+        hardware ethernet 00:50:56:b4:76:69;
+        fixed-address 100.64.25.5;
+}
+
+
+To setup nameserver:::::::
+
+machined in /etc/named.conf:
+
+options {
+        listen-on { 127.0.0.1; 100.64.25.4; };
+        listen-on-v6 port 53 { ::1; };
+        directory       "/var/named";
+        dump-file       "/var/named/data/cache_dump.db";
+        statistics-file "/var/named/data/named_stats.txt";
+        memstatistics-file "/var/named/data/named_mem_stats.txt";
+        allow-query     { localhost; 100.64.25.2/24; 100.64.25.4/24; 100.64.25.5/24; 10.21.32.2/24; 100.64.0.25/24; 100.64.25.3/24;  };
+
+        recursion yes;
+
+        dnssec-enable yes;
+        dnssec-validation yes;
+
+        /* Path to ISC DLV key */
+        bindkeys-file "/etc/named.iscdlv.key";
+
+        managed-keys-directory "/var/named/dynamic";
+
+        pid-file "/run/named/named.pid";
+        session-keyfile "/run/named/session.key";
+};
+
+logging {
+        channel default_debug {
+                file "data/named.run";
+                severity dynamic;
+        };
+};
+
+zone "." IN {
+        type hint;
+        file "named.ca";
+};
+
+zone "dundermifflin.com." {
+        type master;
+        file "dundermifflin.com";
+};
+
+
+include "/etc/named.rfc1912.zones";
+include "/etc/named.root.key";
+
+###machined inside /var/named/dundermifflin.com
+
+$TTL 15m
+dundermifflin.com.  1D  IN  SOA ns1.dundermifflin.com. hostmaster.dundermifflin.com. (
+                2014102801 ; serial
+                3H ; time-to-refresh    
+                15 ; time-to-retry
+                1w ; time-to-expire
+                3h ; minimum-TTL
+)
+                                        IN      NS      ns1.dundermifflin.com.
+ns1.dundermifflin.com.                  IN      A        100.64.25.4
+chase.dundermifflin.com.        1H      IN      A        100.64.25.4
+router.dundermifflin.com.       1H      IN      A        100.64.0.25
+carriage.dundermifflin.com.     1H      IN      A        100.64.25.2
+platen.dundermifflin.com.       1H      IN      A        100.64.25.3
+roller.dundermifflin.com.       1H      IN      A        10.21.32.2
+saddle.dundermifflin.com.       1H      IN      A        100.64.25.5
+machinea.dundermifflin.com.     1W      IN      CNAME    router.dundermifflin.com.
+machineb.dundermifflin.com.     1W      IN      CNAME    carriage.dundermifflin.com.
+machinec.dundermifflin.com.     1W      IN      CNAME    platen.dundermifflin.com.
+machined.dundermifflin.com.     1W      IN      CNAME    chase.dundermifflin.com.
+machinee.dundermifflin.com.     1W      IN      CNAME    roller.dundermifflin.com.
+machinef.dundermifflin.com.     1W      IN      CNAME    saddle.dundermifflin.com.
+dundermifflin.com.              5M      IN      CNAME    carriage.dundermifflin.com
+www.dundermifflin.com.          5M      IN      CNAME    carriage.dundermifflin.com
+www2.dundermifflin.com.         5M      IN      CNAME    saddle.dundermifflin.com.
+ftp.dundermifflin.com.          5M      IN      CNAME    platen.dundermifflin.com.
+files.dundermifflin.com.        1W      IN      CNAME    roller.dundermifflin.com.
+
+
+4. Set up a network interface for machinef:
+
+Started sshd deamon on machinef.
+created a new network interface ifcfg-ens192: 
+DEVICE=ens192
+BOOTPROTO=dhcp
+ONBOOT=yes
+TYPE=Ethernet
+NETWORKING=yes
+
+
+5.
+ran the puppet script from lab3 to add th usernames and groups and other configurations 
+Created a new group http_admins:
+groupadd http_admins
+Added users:
+gpasswd -M apache,ekarimi,pbeesly,kkapoor,abernard,mscott,dschrute http_admins
+
+Changed group owner of /var/www/dundermifflin:
+chgrp http_admins /var/www/dundermifflin
+
+setguid for /var/www/dundermifflin:
+
+Added "%http_admins ALL=/sbin/service httpd restart" to visudo in machine B
+
+crontab -e: 
+*/10 * * * * rsync -av /var/www root@100.64.25.5:/var/. (running every 10 mintues)
+
+Added to /etc/security/access.conf:  + : root : cron crond : ALL 
+
+to setup ssh with key pair instead of password:
+on machineb:
+ssh-keygen
+ssh-copy-id -i /root/.ssh/id_rsa.pub root@100.64.25.5
+
+
+
+
+

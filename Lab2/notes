@@ -19,4 +19,4 @@ cp -r /tmp /tmp_mnt
 
 Question: At this point, have you actually freed up the disk blocks in the original filesystem?  If not, how can you free this no-longer-used storage in the root filesystem?
 
-No, If we want to free up this no-longer-used storage from the original filesystem, we can remove those files from the storage, unmount the filesystem, then shrink the size of the filesystem with "resize2fs" command and finally re-add the storage with commands mentioned above.
+No, If we want to free up this no-longer-used storage from the original filesystem, we can remove those files from the storage, unmount the filesystem, then shrink the size of the filesystem with "resize2fs" command and finally re-add the storage with commands mentioned above.um

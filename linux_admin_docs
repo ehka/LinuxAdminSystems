@@ -1,0 +1,226 @@
+router ip: 100.64.0.25
+vpn password:saclass
+
+
+Lab2:
+
+Partitions:
+
+ls /dev/sd*
+fdisk -l /dev/sdb
+fdisk /dev/sdb
+n - p - 1 - +2G - w 
+mkfs.xfs /dev/sdb1
+mount /dev/sdb1 /mnt
+resize2fs /dev/sdb1
+
+LVM:
+
+pvdisplay
+vgdisplay
+lvdisplay
+pvcreate /dev/sdb1
+vgextend centos /dev/sdb1
+lvcreate -L 2G centos
+
+
+USE "script" command
+vipw to edit etc/passwd
+passwd "bob"
+vipw -g
+bob:x:500
+mkdir /home/bob
+chown bob:bob /home/bob
+ls -la /etc/skel/
+adduser bob
+passwd bob
+usermod -G foobar bob
+
+If you set a group id on a directory then all the files inside will have the same group id( Important for lab 3)
+
+
+umask -S
+/etc/bashrc where umask is
+make sure umask is set correctly for people in a particular room(lab3)
+yum install epel-release
+yum install puppet
+puppet apply site.pp
+read about "ensure" in puppet
+ensure=>present? what does it do?
+membership => minimum?
+
+lab questions:
+1. what groups each user should be in?
+2. waht sould be the user owner of the shared files?
+3. left side of tree account, right side sales?
+4. should I create a group for each user?
+5. should I give root privilege to system admin?
+
+
+systemctl isolate multi-user.target
+systemctl isolate rescue.target
+systemctl list-units --type=target-all
+systemctl set-default rescue.target
+
+For network lab you need to put your machine on specific target level...
+
+
+Lab4::::
+
+crontab -e ?
+visudo ?
+
+dont use *, instead list every file
+
+pam_pwquality?
+
+-:ALL:ALL deny access to everyone
+
+default deny statement for access.conf means don't give access if you are not in the list
+
+Need to use PAM and make som modifciations to PAM files for access.conf
+Need to understand PAM.d directory
+
+dcredit = -2 : you need at least 2 digits in the password. You don't get additional credits if minus sign used
+
+minclass = 3 : you need to have at least 3 classes of characters.
+
+
+rpm -qa = all packages
+
+rpm verify is important for practical exam
+
+
+password: $carina720EF
+
+
+
+yum provides?
+yum makecache clean?
+
+yum provides '*/iostat' ? Looks for a files named iostat
+
+remove vs erase package? erase will get rid of all the traces like config files. remove doesn't
+
+grep domain /etc/services
+
+Use bare minimum of config for network-scripts...
+netstat -rn
+
+echo 1 > /proc/sys...
+
+etc/nsswitch.conf important for pratcitcal exam
+install nslookup
+SOA record?
+find SOA first then dig. for finding authoritavtive dns server
+zone files?
+search int.colorado.edu colorado.edu and more... goes one by one..
+fully qualified domain name has dot at the end
+zytrax.com/books/dns/ch8/soa.html
+domain ttl?
+glue records?
+MX record with the same weight?
+do not enable recursion in authorative name server?why?
+In cartmen resolve file: ?
+allow-querry in cartmen: add kenny and kyle
+change listen-on to add their ips too
+in named.conf:::
+include recursion yes
+directory "/var/named";
+allow-query....
+zone "south...
+type master;
+file "southpark.co"
+
+in var/named/southpark.com change southpark.co to add
+difference between time-to-retry ttl and minimum-ttl?
+
+adding specific ttls before 'IN'
+
+ps -ef | grep named
+
+iptables -t nat -L
+
+GSSAPTIAthentication yes
+
+How to get machines b to f on dhcp?
+two zones?
+8?
+
+cat /var/log/cron
+
+
+5. ran puppet script;
+
+
+removed old dns server from /sysconf/network
+
+iptables -L
+
+firewalld?
+iptables -F  OUTPUT
+
+-w file.tcp to store raw output
+-r file.tcp to read it
+nmap Ss does only tcp ports
+open vs listening in nmap?
+
+
+Use interfaces to trace if forwarding packets are coming to the local network or going out the local network
+
+Allow all the traffic when Machine wants to talk to itself (lo interface):
+iptables -A INPUT -i lo -j ACCEPT (At top)
+
+iptables -A OUTPUT -o eth0 -j ACCEPT(eth0 inteface at top of rules)
+
+block all icmp packets except the four mentioned in the lecture slides 
+
+Question lab6: DROP all other inbound (e.g. if the input interface is eth0) FORWARDed traffic?
+
+Deleted crontab, is that ok?
+
+Removes ACCEPTin /etc??  iptables -A INPUT -s 100.64.0.0/16 -j ACCEPT
+
+what does NEW mean?
+should I do both udp and tcp for dns?
+machineC FORWARD chain accept or drop?
+mahinceA part3?
+iptables assinges automatic subnet value?
+should i run ftp server on machine c?
+what should be the output policy of machineE?
+DNS zone transfers?
+
+
+
+hosts:
+
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+0.0.0.0/0 anywhere
+
+ens192 = external network
+ens224 = Internal(DMZ) network
+ens256 = Internal(file server) network
+
+iptables-restore < /etc/sysconfig/iptables
+forward drop for all machines except A
+implement DHCP rules for DHCP server
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
